@@ -28,8 +28,8 @@
       </el-table-column>
 			<el-table-column prop="alive" label="预定状态" width="120" sortable>
         <template scope="scope">
-          <span style="color:red"  v-if="scope.row.alive == 1">1-已预约</span>
-          <span style="color:green" v-else="scope.row.alive == 2">2-未预约</span>
+          <span style="color:red"  v-if="scope.row.alive == 1">1-可签到</span>
+          <span style="color:green" v-else="scope.row.alive == 2">2-不可签到</span>
 
         </template>
 			</el-table-column>
@@ -41,7 +41,8 @@
 			<el-table-column label="操作" width="260">
 				<template scope="scope">
 					<el-button type="danger" size="small" @click="signInRoom(scope.$index, scope.row)">签到</el-button>
-					<el-button type="success" size="small" @click="signOutRoom(scope.$index, scope.row)">签退</el-button>
+					<el-button type="success" size="small" @click="signOutRoom(scope.$index, scope.row,'签退')">签退</el-button>
+          <el-button type="success" size="small" @click="signOutRoom(scope.$index, scope.row,'取消预约')">取消预约</el-button>
 				</template>
 			</el-table-column>
 		</el-table>
@@ -131,9 +132,11 @@
 
 			getClassroom() {
                 let user = JSON.parse(sessionStorage.getItem("user"));
+                console.log('看看user');
+                console.log(user);
 				let para = {
 					page: this.page,
-                    userid: 'f5c7cf3086244c9d97e5abaae265c5bd', //这个地方需要改回去
+                    userid: user.id, //这个地方需要改回去
 					roomName:this.filters.roomName
 				};
 
@@ -191,16 +194,22 @@
               }
                 let user = JSON.parse(sessionStorage.getItem("user"));
                 let para = {
-                    userid: user.id,
-                    roomId:row.id
+                    // userId: user.id,
+                    id: row.id,
+                  alive: 1
                 };
                 this.listLoading = true;
-                console.log(para);
+                // console.log(para);
                 hasRecordsByUseridAndRoomId(para).then((res) => {
+                  console.log('签到之后');
+                  console.log(res);
                     this.listLoading = false;
-                    let {msg,success}=res;
-                    console.log(success);
-                    if(success) {
+                    // let {msg,success}=res;
+                    let msg=res.detail;
+                    let success=msg=="更新成功"?true:false;
+
+                    // console.log(success);
+                    if(!success) {
                         this.$message({
                             message: '已经签过到',
                             type: 'error'
@@ -214,51 +223,47 @@
                         });
                     }
                 });
-
+              this.getClassroom();
 
 
 			},
-      signOutRoom: function (index, row) {
+      signOutRoom: function (index, row,str) {
         if(row.alive==2){
           this.$message({
-            message: '没预约，不可签退',
+            message: '没预约，不可'+str,
             type: 'error'
           });
           return ;
         }
-        if(row.alive==2){
-          this.$message({
-            message: '没预约，不可签到',
-            type: 'error'
-          });
-          return ;
-        }
+
         let user = JSON.parse(sessionStorage.getItem("user"));
         let para = {
-          userid: user.id,
-          roomId:row.id
+          // userId: user.id,
+          id: row.id,
+          alive: 2
         };
         this.listLoading = true;
         console.log(para);
         hasRecordsByUseridAndRoomId(para).then((res) => {
           this.listLoading = false;
-          let {msg,success}=res;
-          console.log(success);
-          if(success) {
+
+          let msg=res.detail;
+          let success=msg=="更新成功"?true:false;
+          if(!success) {
             this.$message({
-              message: '已经签过到',
+              message: str+'失败',
               type: 'error'
             });
 
           }else{
             //完成签到
             this.$message({
-              message: '签过成功',
+              message: str+'成功',
               type: 'success'
             });
           }
         });
-
+        this.getClassroom();
 
 
       },

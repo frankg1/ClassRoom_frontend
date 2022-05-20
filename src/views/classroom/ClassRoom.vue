@@ -59,7 +59,7 @@
 				<template scope="scope">
 					<span style="color:red"  v-if="scope.row.status == 2">
 <!--						<el-button style="width:100px"  :disabled=" scope.row.user.id != loginUser.id ? true:false" type="warning" size="small" @click="handleCancelEdit(scope.$index, scope.row)">取消预约</el-button>-->
-            <el-button style="width:100px"  :disabled="scope.row.id != loginUser.id ? true:false" type="warning" size="small" @click="handleCancelEdit(scope.$index, scope.row)">取消预约</el-button>
+            <el-button style="width:100px"  :disabled="true" type="warning" size="small" @click="handleCancelEdit(scope.$index, scope.row)">已预约</el-button>
 					</span>
 					<span v-else-if="scope.row.status == 1">
 						<el-button style="width:100px"  type="warning" size="small" @click="handleEdit(scope.$index, scope.row)">预约</el-button>
@@ -239,6 +239,8 @@
 			},
 			//显示编辑界面
 			handleEdit: function (index, row) {
+              console.log('显示编辑界面');
+              console.log(row);
 				this.editFormVisible = true;
 				this.editForm = Object.assign({}, row);
 			},
@@ -254,15 +256,20 @@
 							//预约人
 							let user = JSON.parse(sessionStorage.getItem("user"));
 							let params = {
-							    userid: user.id,
-                  seatid: para.id
-							}
+							    userId: user.id,
+                  seatId: para.id,
+                preserveTime: Date.parse(new Date())
+							};
+              console.log('预约参数');
+              console.log(params);
 
                             scheduleClassRoom(params).then((res) => {
                               console.log('okokok');
                               console.log(res);
+                              let msg=res.detail;
+                              let success=msg=="座位预约成功"?true:false;
 								this.editLoading = false;
-								let {msg,success}=res;
+								// let {msg,success}=res;
 								if(success) {
                                     this.$message({
                                         message: '提交成功',
@@ -289,7 +296,11 @@
                 }).then(() => {
                     this.listLoading = true;
 
-                    let para = { id: row.id };
+                  let params = {
+                    userId: user.id,
+                    seatId: para.id,
+                    preserveTime: Date.parse(new Date())
+                  };
                     cancelClassRoom(para).then((res) => {
                         this.listLoading = false;
                         let {msg,success}=res;

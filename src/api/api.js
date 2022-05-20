@@ -27,7 +27,7 @@ export const getSignInRoomlistPage = params => { return axios.get(`${base}/histo
 //查询签到记录数 findRecordsListPage
 export const findRecordsListPage = params => { return axios.patch(`${base}/signIn/recordsListpage`,params).then(res => res.data); };
 //判断是否已经打过卡
-export const hasRecordsByUseridAndRoomId = params => { return axios.patch(`${base}/signIn/hasRecordsByUseridAndRoomId`,params).then(res => res.data); };
+export const hasRecordsByUseridAndRoomId = params => { return axios.put(`${base}/history`,params).then(res => res.data); };
 //新增教室
 export const addRoom = params => { return axios.post(`${base}//study_room`, params ).then(res => res.data); };
 //编辑教室
